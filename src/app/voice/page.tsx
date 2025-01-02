@@ -57,8 +57,10 @@ export default function Page() {
       "/api/connection-details",
       window.location.origin
     );
+    console.log("URL for the Voice mode: ", url.toString())
     const response = await fetch(url.toString());
     const connectionDetailsData = await response.json();
+    console.log("Resonse from server: ", connectionDetailsData);
     updateConnectionDetails(connectionDetailsData);
   }, []);
 
