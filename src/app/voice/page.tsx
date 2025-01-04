@@ -18,7 +18,8 @@ import { CloseIcon } from "@/components/CloseIcon";
 import { useKrispNoiseFilter } from "@livekit/components-react/krisp";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
-
+import { TranscriptionTile } from "@/transcriptions/TranscriptionTile";
+import { useMemo } from "react";
 export default function Page() {
   const [connectionDetails, updateConnectionDetails] = useState<
     ConnectionDetails | undefined
@@ -75,7 +76,7 @@ export default function Page() {
   return (
     <main
       data-lk-theme="default"
-      className="h-full grid content-center bg-[var(--lk-bg)]"
+      className="h-screen grid content-center bg-[var(--lk-bg)]"
     >
       <LiveKitRoom
         token={connectionDetails?.participantToken}
@@ -108,8 +109,21 @@ function SimpleVoiceAssistant(props: {
   useEffect(() => {
     props.onStateChange(state);
   }, [props, state]);
+
+  const chatTileContent = useMemo(() => {
+    if (audioTrack) {
+      return (
+        <TranscriptionTile
+          agentAudioTrack={audioTrack}
+          accentColor={'cyan'}
+        />
+      );
+    }
+    return <></>;
+  }, [audioTrack]);
+
   return (
-    <div className="h-[300px] max-w-[90vw] mx-auto">
+    <div className="flex flex-col gap-2 h-[300px] max-w-[90vw] mx-auto">
       <BarVisualizer
         state={state}
         barCount={5}
@@ -117,6 +131,10 @@ function SimpleVoiceAssistant(props: {
         className="agent-visualizer"
         options={{ minHeight: 24 }}
       />
+      <div className="max-w-[50vw] mx-auto">
+        {chatTileContent}
+      </div>
+      
     </div>
   );
 }
