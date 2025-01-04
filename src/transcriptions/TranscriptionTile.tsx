@@ -94,6 +94,8 @@ export function TranscriptionTile({
   return (
     <ChatTile messages={messages} accentColor={accentColor} onSend={sendChat} />
   );
+
+
 }
 
 function segmentToChatMessage(

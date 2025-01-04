@@ -27,6 +27,7 @@ export default function Page() {
   const [agentState, setAgentState] = useState<AgentState>("disconnected");
   const router = useRouter();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [audioTrack, setAudioTrack] = useState<any | null>(null)
 
   useEffect(() => {
     const supabase = createClient();
@@ -90,11 +91,22 @@ export default function Page() {
         }}
         className="grid grid-rows-[2fr_1fr] items-center"
       >
-        <SimpleVoiceAssistant onStateChange={setAgentState} />
+        <SimpleVoiceAssistant onStateChange={setAgentState} onAudioTrackChange={setAudioTrack}/>
         <ControlBar
           onConnectButtonClicked={onConnectButtonClicked}
           agentState={agentState}
         />
+        {audioTrack && (
+            <div className="flex w-full h-full justify-center items-center">
+                <div className="flex max-w-[300px] max-h-[200px] overflow-y-auto">
+                    <TranscriptionTile
+                        agentAudioTrack={audioTrack}
+                        accentColor={'cyan'}
+                    />
+                </div>
+            </div>
+            
+        )}
         <RoomAudioRenderer />
         <NoAgentNotification state={agentState} />
       </LiveKitRoom>
@@ -104,23 +116,25 @@ export default function Page() {
 
 function SimpleVoiceAssistant(props: {
   onStateChange: (state: AgentState) => void;
+  onAudioTrackChange: (track: any) => void;
 }) {
   const { state, audioTrack } = useVoiceAssistant();
   useEffect(() => {
     props.onStateChange(state);
+    props.onAudioTrackChange(audioTrack)
   }, [props, state]);
 
-  const chatTileContent = useMemo(() => {
-    if (audioTrack) {
-      return (
-        <TranscriptionTile
-          agentAudioTrack={audioTrack}
-          accentColor={'cyan'}
-        />
-      );
-    }
-    return <></>;
-  }, [audioTrack]);
+//   const chatTileContent = useMemo(() => {
+//     if (audioTrack) {
+//       return (
+//         <TranscriptionTile
+//           agentAudioTrack={audioTrack}
+//           accentColor={'cyan'}
+//         />
+//       );
+//     }
+//     return <></>;
+//   }, [audioTrack]);
 
   return (
     <div className="flex flex-col gap-2 h-[300px] max-w-[90vw] mx-auto">
@@ -131,9 +145,9 @@ function SimpleVoiceAssistant(props: {
         className="agent-visualizer"
         options={{ minHeight: 24 }}
       />
-      <div className="max-w-[50vw] mx-auto">
+      {/* <div className="max-w-[50vw] mx-auto">
         {chatTileContent}
-      </div>
+      </div> */}
       
     </div>
   );
