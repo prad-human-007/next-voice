@@ -27,7 +27,7 @@ export const ChatTile = ({ messages, accentColor, onSend }: ChatTileProps) => {
   }, [containerRef, messages]);
 
   return (
-    <div className="flex flex-col gap-4 w-full h-full">
+    <div className="flex flex-col gap-4 w-full h-full ">
       <div
         ref={containerRef}
         className="overflow-y-auto"

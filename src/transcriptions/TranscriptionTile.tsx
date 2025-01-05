@@ -16,9 +16,11 @@ import { useEffect, useState } from "react";
 export function TranscriptionTile({
   agentAudioTrack,
   accentColor,
+  setAllMessages,
 }: {
   agentAudioTrack: TrackReferenceOrPlaceholder;
   accentColor: string;
+  setAllMessages: any;
 }) {
   const agentMessages = useTrackTranscription(agentAudioTrack);
   const localParticipant = useLocalParticipant();
@@ -82,6 +84,8 @@ export function TranscriptionTile({
     }
     allMessages.sort((a, b) => a.timestamp - b.timestamp);
     setMessages(allMessages);
+    setAllMessages(allMessages)
+    
   }, [
     transcripts,
     chatMessages,

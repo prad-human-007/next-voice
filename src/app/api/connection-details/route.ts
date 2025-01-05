@@ -29,7 +29,6 @@ export async function GET() {
         throw new Error("LIVEKIT_API_SECRET is not defined");
         }
 
-        // Generate participant token
         const participantIdentity = `voice_assistant_user_${Math.floor(Math.random() * 10_000)}`;
         const roomName = `voice_assistant_room_${Math.floor(Math.random() * 10_000)}`;
         const participantToken = await createParticipantToken(

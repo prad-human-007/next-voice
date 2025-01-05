@@ -20,6 +20,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
 import { TranscriptionTile } from "@/transcriptions/TranscriptionTile";
 import { useMemo } from "react";
+import { Button } from "@/components/ui/button";
 export default function Page() {
   const [connectionDetails, updateConnectionDetails] = useState<
     ConnectionDetails | undefined
@@ -27,7 +28,8 @@ export default function Page() {
   const [agentState, setAgentState] = useState<AgentState>("disconnected");
   const router = useRouter();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [audioTrack, setAudioTrack] = useState<any | null>(null)
+  const [audioTrack, setAudioTrack] = useState<any | null>(null);
+  const [allMessages, setAllMessages] = useState<any | null>(null);
 
   useEffect(() => {
     const supabase = createClient();
@@ -74,11 +76,16 @@ export default function Page() {
     )
   }
 
+  const onButtonClick = () => {
+    console.log("ALL MESSAGES: ", allMessages)
+  }
+
   return (
     <main
       data-lk-theme="default"
-      className="h-screen grid content-center bg-[var(--lk-bg)]"
+      className="flex flex-col justify-center items-center h-screen bg-[var(--lk-bg)]"
     >
+        <Button onClick={onButtonClick}> See Messages </Button>
       <LiveKitRoom
         token={connectionDetails?.participantToken}
         serverUrl={connectionDetails?.serverUrl}
@@ -89,19 +96,21 @@ export default function Page() {
         onDisconnected={() => {
           updateConnectionDetails(undefined);
         }}
-        className="grid grid-rows-[2fr_1fr] items-center"
+        className="flex flex-col max-h-full py-6 "
       >
+        
         <SimpleVoiceAssistant onStateChange={setAgentState} onAudioTrackChange={setAudioTrack}/>
         <ControlBar
           onConnectButtonClicked={onConnectButtonClicked}
           agentState={agentState}
         />
         {audioTrack && (
-            <div className="flex w-full h-full justify-center items-center">
-                <div className="flex max-w-[300px] max-h-[200px] overflow-y-auto">
+            <div className="flex w-full max-h-full justify-center items-center">
+                <div className="flex max-w-[400px] max-h-[400px] h-full w-full px-2 overflow-y-auto">
                     <TranscriptionTile
                         agentAudioTrack={audioTrack}
                         accentColor={'cyan'}
+                        setAllMessages={setAllMessages}
                     />
                 </div>
             </div>
@@ -124,18 +133,6 @@ function SimpleVoiceAssistant(props: {
     props.onAudioTrackChange(audioTrack)
   }, [props, state]);
 
-//   const chatTileContent = useMemo(() => {
-//     if (audioTrack) {
-//       return (
-//         <TranscriptionTile
-//           agentAudioTrack={audioTrack}
-//           accentColor={'cyan'}
-//         />
-//       );
-//     }
-//     return <></>;
-//   }, [audioTrack]);
-
   return (
     <div className="flex flex-col gap-2 h-[300px] max-w-[90vw] mx-auto">
       <BarVisualizer
@@ -145,9 +142,6 @@ function SimpleVoiceAssistant(props: {
         className="agent-visualizer"
         options={{ minHeight: 24 }}
       />
-      {/* <div className="max-w-[50vw] mx-auto">
-        {chatTileContent}
-      </div> */}
       
     </div>
   );
