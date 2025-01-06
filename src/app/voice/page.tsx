@@ -21,6 +21,9 @@ import { createClient } from "@/utils/supabase/client";
 import { TranscriptionTile } from "@/transcriptions/TranscriptionTile";
 import { useMemo } from "react";
 import { Button } from "@/components/ui/button";
+import { useRoomContext } from "@livekit/components-react";
+import { useConnectionState } from "@livekit/components-react";
+import MyControlBar from "@/components/MyControlBar";
 export default function Page() {
   const [connectionDetails, updateConnectionDetails] = useState<
     ConnectionDetails | undefined
@@ -86,39 +89,39 @@ export default function Page() {
       className="flex flex-col justify-center items-center h-screen bg-[var(--lk-bg)]"
     >
         <Button onClick={onButtonClick}> See Messages </Button>
-      <LiveKitRoom
-        token={connectionDetails?.participantToken}
-        serverUrl={connectionDetails?.serverUrl}
-        connect={connectionDetails !== undefined}
-        audio={true}
-        video={false}
-        onMediaDeviceFailure={onDeviceFailure}
-        onDisconnected={() => {
-          updateConnectionDetails(undefined);
-        }}
-        className="flex flex-col max-h-full py-6 "
-      >
+        <LiveKitRoom
+            token={connectionDetails?.participantToken}
+            serverUrl={connectionDetails?.serverUrl}
+            connect={connectionDetails !== undefined}
+            audio={true}
+            video={false}
+            onMediaDeviceFailure={onDeviceFailure}
+            onDisconnected={() => {
+                updateConnectionDetails(undefined);
+            }}
+            className="flex flex-col max-h-full py-6 "
+        >
         
-        <SimpleVoiceAssistant onStateChange={setAgentState} onAudioTrackChange={setAudioTrack}/>
-        <ControlBar
-          onConnectButtonClicked={onConnectButtonClicked}
-          agentState={agentState}
-        />
-        {audioTrack && (
-            <div className="flex w-full max-h-full justify-center items-center">
-                <div className="flex max-w-[400px] max-h-[400px] h-full w-full px-2 overflow-y-auto">
-                    <TranscriptionTile
-                        agentAudioTrack={audioTrack}
-                        accentColor={'cyan'}
-                        setAllMessages={setAllMessages}
-                    />
+            <SimpleVoiceAssistant onStateChange={setAgentState} onAudioTrackChange={setAudioTrack}/>
+            <MyControlBar
+            onConnectButtonClicked={onConnectButtonClicked}
+            agentState={agentState}
+            />
+            {audioTrack && (
+                <div className="flex w-full max-h-full justify-center items-center">
+                    <div className="flex max-w-[400px] max-h-[400px] h-full w-full px-2 overflow-y-auto">
+                        <TranscriptionTile
+                            agentAudioTrack={audioTrack}
+                            accentColor={'cyan'}
+                            setAllMessages={setAllMessages}
+                        />
+                    </div>
                 </div>
-            </div>
-            
-        )}
-        <RoomAudioRenderer />
-        <NoAgentNotification state={agentState} />
-      </LiveKitRoom>
+                
+            )}
+            <RoomAudioRenderer />
+            <NoAgentNotification state={agentState} />
+        </LiveKitRoom>
     </main>
   );
 }
@@ -143,56 +146,6 @@ function SimpleVoiceAssistant(props: {
         options={{ minHeight: 24 }}
       />
       
-    </div>
-  );
-}
-
-function ControlBar(props: {
-  onConnectButtonClicked: () => void;
-  agentState: AgentState;
-}) {
-  /**
-   * Use Krisp background noise reduction when available.
-   * Note: This is only available on Scale plan, see {@link https://livekit.io/pricing | LiveKit Pricing} for more details.
-   */
-  const krisp = useKrispNoiseFilter();
-  useEffect(() => {
-    krisp.setNoiseFilterEnabled(true);
-  }, []);
-
-  return (
-    <div className="relative h-[100px]">
-      <AnimatePresence>
-        {props.agentState === "disconnected" && (
-          <motion.button
-            initial={{ opacity: 0, top: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0, top: "-10px" }}
-            transition={{ duration: 1, ease: [0.09, 1.04, 0.245, 1.055] }}
-            className="uppercase absolute left-1/2 -translate-x-1/2 px-4 py-2 bg-white text-black rounded-md"
-            onClick={() => props.onConnectButtonClicked()}
-          >
-            Start a conversation
-          </motion.button>
-        )}
-      </AnimatePresence>
-      <AnimatePresence>
-        {props.agentState !== "disconnected" &&
-          props.agentState !== "connecting" && (
-            <motion.div
-              initial={{ opacity: 0, top: "10px" }}
-              animate={{ opacity: 1, top: 0 }}
-              exit={{ opacity: 0, top: "-10px" }}
-              transition={{ duration: 0.4, ease: [0.09, 1.04, 0.245, 1.055] }}
-              className="flex h-8 absolute left-1/2 -translate-x-1/2  justify-center"
-            >
-              <VoiceAssistantControlBar controls={{ leave: false }} />
-              <DisconnectButton>
-                <CloseIcon />
-              </DisconnectButton>
-            </motion.div>
-          )}
-      </AnimatePresence>
     </div>
   );
 }
