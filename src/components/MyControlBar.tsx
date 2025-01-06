@@ -12,6 +12,7 @@ import { useRoomContext } from "@livekit/components-react";
 export default function MyControlBar(props: {
     onConnectButtonClicked: () => void;
     agentState: AgentState;
+    onConvoClose:  () => void;
   }) {
     /**
      * Use Krisp background noise reduction when available.
@@ -32,7 +33,8 @@ export default function MyControlBar(props: {
               console.log('ROOM CONTEXT', room)
               room.disconnect(true)
             }
-        }, 60000);
+            props.onConvoClose()
+        }, 30000);
     }
 
     return (

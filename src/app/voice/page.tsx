@@ -79,8 +79,22 @@ export default function Page() {
     )
   }
 
-  const onButtonClick = () => {
+  const onConvoClose = async () => {
     console.log("ALL MESSAGES: ", allMessages)
+    let msgCombine = ''
+    allMessages.forEach((element:any) => {
+        console.log(element.message)
+        msgCombine += element.message + ' ';
+    });
+    const response = await fetch('/api/score/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'text/plain'
+        },
+        body: 'Summarize this in one line: ' + msgCombine,
+    })
+    const { message } = await response.json()
+    console.log( message )
   }
 
   return (
@@ -88,7 +102,7 @@ export default function Page() {
       data-lk-theme="default"
       className="flex flex-col justify-center items-center h-screen bg-[var(--lk-bg)]"
     >
-        <Button onClick={onButtonClick}> See Messages </Button>
+        <Button onClick={onConvoClose}> See Messages </Button>
         <LiveKitRoom
             token={connectionDetails?.participantToken}
             serverUrl={connectionDetails?.serverUrl}
@@ -104,8 +118,9 @@ export default function Page() {
         
             <SimpleVoiceAssistant onStateChange={setAgentState} onAudioTrackChange={setAudioTrack}/>
             <MyControlBar
-            onConnectButtonClicked={onConnectButtonClicked}
-            agentState={agentState}
+                onConnectButtonClicked={onConnectButtonClicked}
+                agentState={agentState}
+                onConvoClose={onConvoClose}
             />
             {audioTrack && (
                 <div className="flex w-full max-h-full justify-center items-center">
