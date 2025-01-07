@@ -33,6 +33,10 @@ export default function Page() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [audioTrack, setAudioTrack] = useState<any | null>(null);
   const [allMessages, setAllMessages] = useState<any | null>(null);
+  const [ result, setResult ] = useState(false);
+  const [ text, setText ] = useState('')
+  const [ convoEnd, setConvoEnd ] = useState(false);
+
 
   useEffect(() => {
     const supabase = createClient();
@@ -49,16 +53,9 @@ export default function Page() {
     });
   }, [router]);
 
-  const onConnectButtonClicked = useCallback(async () => {
-    // Generate room connection details, including:
-    //   - A random Room name
-    //   - A random Participant name
-    //   - An Access Token to permit the participant to join the room
-    //   - The URL of the LiveKit server to connect to
-    //
-    // In real-world application, you would likely allow the user to specify their
-    // own participant name, and possibly to choose from existing rooms to join.
+  
 
+  const onConnectButtonClicked = useCallback(async () => {
     const url = new URL(
       process.env.NEXT_PUBLIC_CONN_DETAILS_ENDPOINT ??
       "/api/connection-details",
@@ -71,6 +68,37 @@ export default function Page() {
     updateConnectionDetails(connectionDetailsData);
   }, []);
 
+  
+
+  const printMsg = async () => {
+    console.log("ALL MESSAGES: in Print msg ", allMessages)
+    if(allMessages) {
+        let msgCombine = ''
+        allMessages.forEach((element:any) => {
+            console.log(element.message)
+            msgCombine += element.message + ' ';
+        });
+        const response = await fetch('/api/score/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'text/plain'
+            },
+            body: 'Summarize this in one line: ' + msgCombine,
+        })
+        const { message } = await response.json()
+        console.log( message )
+        setResult(true)
+        setText(message)
+    }
+
+  }
+
+  useEffect(() => {
+    if(convoEnd) {
+        printMsg()
+    }
+  }, [convoEnd])
+
   if(!isAuthenticated) {
     return (
         <>
@@ -79,30 +107,12 @@ export default function Page() {
     )
   }
 
-  const onConvoClose = async () => {
-    console.log("ALL MESSAGES: ", allMessages)
-    let msgCombine = ''
-    allMessages.forEach((element:any) => {
-        console.log(element.message)
-        msgCombine += element.message + ' ';
-    });
-    const response = await fetch('/api/score/', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'text/plain'
-        },
-        body: 'Summarize this in one line: ' + msgCombine,
-    })
-    const { message } = await response.json()
-    console.log( message )
-  }
-
   return (
     <main
       data-lk-theme="default"
-      className="flex flex-col justify-center items-center h-screen bg-[var(--lk-bg)]"
+      className={`flex flex-col justify-center items-center h-screen bg-[var(--lk-bg)]`}
     >
-        <Button onClick={onConvoClose}> See Messages </Button>
+        {/* <Button onClick={onConvoClose}> See Messages </Button> */}
         <LiveKitRoom
             token={connectionDetails?.participantToken}
             serverUrl={connectionDetails?.serverUrl}
@@ -113,14 +123,14 @@ export default function Page() {
             onDisconnected={() => {
                 updateConnectionDetails(undefined);
             }}
-            className="flex flex-col max-h-full py-6 "
+            className={`flex flex-col max-h-full py-6 ${result ? 'blur-md' : ''}`}
         >
         
             <SimpleVoiceAssistant onStateChange={setAgentState} onAudioTrackChange={setAudioTrack}/>
             <MyControlBar
                 onConnectButtonClicked={onConnectButtonClicked}
                 agentState={agentState}
-                onConvoClose={onConvoClose}
+                setConvoEnd={setConvoEnd}
             />
             {audioTrack && (
                 <div className="flex w-full max-h-full justify-center items-center">
@@ -137,6 +147,15 @@ export default function Page() {
             <RoomAudioRenderer />
             <NoAgentNotification state={agentState} />
         </LiveKitRoom>
+        {result && (
+            <div className="absolute top-0 left-0 w-full h-full flex justify-center items-center bg-black bg-opacity-10">
+                <div className="bg-black p-4 rounded shadow-lg">
+                    <h2 className="text-xl font-bold">Result</h2>
+                    <p>{text}</p>
+                    <Button onClick={() => setResult(false)}>Close</Button>
+                </div>
+            </div>
+        )}
     </main>
   );
 }

@@ -84,6 +84,7 @@ export function TranscriptionTile({
     }
     allMessages.sort((a, b) => a.timestamp - b.timestamp);
     setMessages(allMessages);
+    console.log('Got All messages in transcription: ', allMessages)
     setAllMessages(allMessages)
     
   }, [

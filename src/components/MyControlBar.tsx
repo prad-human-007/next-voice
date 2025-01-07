@@ -12,7 +12,7 @@ import { useRoomContext } from "@livekit/components-react";
 export default function MyControlBar(props: {
     onConnectButtonClicked: () => void;
     agentState: AgentState;
-    onConvoClose:  () => void;
+    setConvoEnd: any ;
   }) {
     /**
      * Use Krisp background noise reduction when available.
@@ -24,17 +24,18 @@ export default function MyControlBar(props: {
     }, []);
 
     const room = useRoomContext()
+    const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-    const onConectionClicked = () => {
+    const onConectionClicked = async () => {
         console.log("Connection Timer Started in My ControlBar");
-        setTimeout(() => {
-            console.log("20 seconds have passed in MyContorlBar");
-            if(room){
-              console.log('ROOM CONTEXT', room)
-              room.disconnect(true)
-            }
-            props.onConvoClose()
-        }, 30000);
+        await wait(30000); // Wait for 60 seconds
+        
+        console.log("20 seconds have passed in MyContorlBar");
+        props.setConvoEnd(true)
+        if(room) {
+          room.disconnect(true)
+        }
+        
     }
 
     return (
